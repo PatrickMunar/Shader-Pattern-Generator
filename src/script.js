@@ -120,7 +120,6 @@ let cycleTime = 0
 let backTrackTime = 0
 let prevBackTrackTime = 0
 let pauseTime = 0
-let x = true
 
 const tick = () =>
 {

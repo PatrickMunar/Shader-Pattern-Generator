@@ -3,6 +3,9 @@
 uniform float uNoiseSeed;
 uniform vec2 uMouse;
 uniform float uTime;
+uniform float uDetails;
+uniform float uBlur;
+uniform float uNegative;
 
 varying vec2 vUv;
 
@@ -353,7 +356,8 @@ void main()
     );
     changingUV.x += uMouse.x * 0.00025;
     changingUV.y += uMouse.y * 0.00025;
-    float strength = step(0.9, sin(cnoise(changingUV * 10.0) * sin(uTime * 0.5) * 20.0));
+    float strength = step(0.9, sin(cnoise(changingUV * 10.0) * sin(uTime * 0.5) * uDetails)) - uBlur * (step(0.9, sin(cnoise(changingUV * 10.0) * sin(uTime * 0.5) * uDetails)) + sin(cnoise(changingUV * 10.0) * sin(uTime * 0.5) * uDetails));
+    strength = strength + uNegative * (- strength + 1.0 - strength );
     gl_FragColor = vec4(strength, strength, strength, 1.0); 
 
     // Colored
@@ -363,13 +367,13 @@ void main()
     // );
     // changingUV.x += uMouse.x * 0.00025;
     // changingUV.y += uMouse.y * 0.00025;
-    // float strength = step(0.9, sin(cnoise(changingUV * 10.0) * 20.0));
+    // float strength = sin(cnoise(changingUV * 10.0) * sin(uTime * 0.5) * 20.0);
     // vec3 blackColor = vec3(0.0);
     // vec2 modifiedvUv = vec2(
     //     vUv.x,
     //     vUv.y
     // );
-    // vec3 uvColor = vec3(modifiedvUv, 0.5);
+    // vec3 uvColor = vec3(modifiedvUv, 1.0);
     // vec3 mixedColor = mix(blackColor, uvColor, strength);
     // gl_FragColor = vec4(mixedColor, 1.0);
 }

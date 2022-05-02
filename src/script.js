@@ -4,7 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'lil-gui'
 import testVertexShader from './shaders/test/vertex.glsl'
 import testFragmentShader from './shaders/test/fragment.glsl'
-import { Matrix3, Vector2 } from 'three'
+import { Vector2 } from 'three'
+import gsap from 'gsap'
 
 /**
  * Base
@@ -37,8 +38,11 @@ const material = new THREE.ShaderMaterial({
     side: THREE.DoubleSide,
     uniforms: {
         uTime: {value: 0},
-        uNoiseSeed: {value: 1},
-        uMouse: {value: new Vector2(0,0)}
+        uNoiseSeed: {value: 0.1},
+        uMouse: {value: new Vector2(0,0)},
+        uDetails: {value: 20},
+        uBlur: {value: 0},
+        uNegative: {value: 0},
     },
     // wireframe: true
 })
@@ -101,12 +105,100 @@ document.addEventListener('mousemove', (client) => {
 let isUTimePaused = true
 
 // Click
-document.addEventListener('click', () => {
+document.querySelector('.webgl').addEventListener('click', () => {
     if (isUTimePaused == true) {
         isUTimePaused = false
     }
     else {
         isUTimePaused = true
+    }
+})
+
+// Settings Bar
+
+let detailsValue = document.querySelector('#detailsValue')
+let uDetailsValueText = document.querySelector('#uDetailsValueText')
+
+detailsValue.oninput = () => {
+    material.uniforms.uDetails.value = detailsValue.value
+    uDetailsValueText.innerText = detailsValue.value
+}
+
+let seedValue = document.querySelector('#seedValue')
+let uNoiseSeedValueText = document.querySelector('#uNoiseSeedValueText')
+
+seedValue.oninput = () => {
+    material.uniforms.uNoiseSeed.value = seedValue.value
+    uNoiseSeedValueText.innerText = seedValue.value * 10
+}
+
+let blurBox = document.querySelector('#blurBox')
+let isBlurSelected = false
+
+blurBox.addEventListener('click', () => {
+    if (isBlurSelected == false) {
+        material.uniforms.uBlur.value = 1
+        isBlurSelected = true
+        blurBox.style.backgroundColor = 'black'
+    }
+    else {
+        material.uniforms.uBlur.value = 0
+        isBlurSelected = false
+        blurBox.style.backgroundColor = 'white'
+    }
+})
+
+let negativeBox = document.querySelector('#negativeBox')
+let isNegativeSelected = false
+
+negativeBox.addEventListener('click', () => {
+    if (isNegativeSelected == false) {
+        material.uniforms.uNegative.value = 1
+        isNegativeSelected = true
+        negativeBox.style.backgroundColor = 'black'
+    }
+    else {
+        material.uniforms.uNegative.value = 0
+        isNegativeSelected = false
+        negativeBox.style.backgroundColor = 'white'
+    }
+})
+
+let blurArrowBox = document.querySelector('#blurArrowBox')
+let blurArrow = document.querySelector('#blurArrow')
+let isBlurArrowFlipped = false
+
+blurArrowBox.addEventListener('click', () => {
+    if (isBlurArrowFlipped == false) {
+        isBlurArrowFlipped = true
+        gsap.to('#detailsSliderDiv', {ease: 'Power1.easeOut', duration: 0.5, delay: 0, x: 20})
+        gsap.to('#detailsSliderDiv', {duration: 0.25, delay: 0.35, opacity: 1})
+        blurArrow.classList.add('flipped')
+    }
+    else {
+        isBlurArrowFlipped = false
+        gsap.to('#detailsSliderDiv', {ease: 'Power1.easeIn', duration: 0.5, delay: 0, x: -500})
+        gsap.to('#detailsSliderDiv', {duration: 0.25, delay: 0, opacity: 0})
+        blurArrow.classList.remove('flipped')
+    }
+})
+
+let seedArrowBox = document.querySelector('#seedArrowBox')
+let seedArrow = document.querySelector('#seedArrow')
+let isSeedArrowFlipped = false
+
+seedArrowBox.addEventListener('click', () => {
+    if (isSeedArrowFlipped == false) {
+        isSeedArrowFlipped = true
+        gsap.to('#seedSliderDiv', {ease: 'Power1.easeOut', duration: 0.5, delay: 0, x: 20})
+        gsap.to('#seedSliderDiv', {duration: 0.25, delay: 0.35, opacity: 1})
+        seedArrow.classList.add('flipped')
+    }
+    else {
+        isSeedArrowFlipped = false
+        gsap.to('#seedSliderDiv', {ease: 'Power1.easeIn', duration: 0.5, delay: 0, x: -500})
+        gsap.to('#seedSliderDiv', {duration: 0.25, delay: 0, opacity: 0})
+        seedArrow.classList.remove('flipped')
     }
 })
 
@@ -120,6 +212,8 @@ let cycleTime = 0
 let backTrackTime = 0
 let prevBackTrackTime = 0
 let pauseTime = 0
+
+let randomSeed = 0
 
 const tick = () =>
 {
@@ -135,7 +229,10 @@ const tick = () =>
         }
         if ((resetTime - cycleTime - backTrackTime) >= Math.PI*2) {
             cycleTime += Math.PI*2
-            material.uniforms.uNoiseSeed.value = Math.random()*100 + 1
+            randomSeed = (Math.floor(Math.random()*99) + 1) * 0.1
+            material.uniforms.uNoiseSeed.value = parseFloat(randomSeed.toFixed(2))
+            uNoiseSeedValueText.innerText = material.uniforms.uNoiseSeed.value * 10
+            seedValue.value = material.uniforms.uNoiseSeed.value
         }
     }
     else {
